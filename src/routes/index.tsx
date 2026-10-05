@@ -267,7 +267,7 @@ function CartDrawer({ cart, products, setQty, onClose, onPaid }: {
 }) {
   const [paying, setPaying] = useState<string | null>(null);
   const items = products.filter((p) => cart[p.id]);
-  const subtotal = items.reduce((s, p) => s + p.price * cart[p.id], 0);
+  const subtotal = items.reduce((s, p) => s + p.price * (cart[p.id] ?? 0), 0);
   const fee = subtotal ? Math.round(subtotal * 0.02 * 100) / 100 : 0;
   const pay = (via: string) => { setPaying(via); setTimeout(() => onPaid(`Payment via ${via} successful — funds held in escrow`), 1400); };
   return (
@@ -286,9 +286,9 @@ function CartDrawer({ cart, products, setQty, onClose, onPaid }: {
                 <p className="truncate text-sm font-semibold">{p.title}</p>
                 <p className="text-sm text-primary">{zar(p.price)}</p>
                 <div className="mt-1 flex items-center gap-2">
-                  <button onClick={() => setQty(p.id, cart[p.id] - 1)} className="rounded-md border p-1"><Minus className="h-3 w-3" /></button>
+                  <button onClick={() => setQty(p.id, (cart[p.id] ?? 0) - 1)} className="rounded-md border p-1"><Minus className="h-3 w-3" /></button>
                   <span className="w-5 text-center text-sm">{cart[p.id]}</span>
-                  <button onClick={() => setQty(p.id, cart[p.id] + 1)} className="rounded-md border p-1"><Plus className="h-3 w-3" /></button>
+                  <button onClick={() => setQty(p.id, (cart[p.id] ?? 0) + 1)} className="rounded-md border p-1"><Plus className="h-3 w-3" /></button>
                   <button onClick={() => setQty(p.id, 0)} className="ml-auto text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
                 </div>
               </div>
@@ -388,7 +388,7 @@ function ListingForm({ me, onClose, onSubmit }: { me: (typeof ROLES)[number]; on
         if (!f.title.trim() || !(price > 0)) return;
         onSubmit({ id: crypto.randomUUID(), title: f.title.trim(), price, category: f.category, condition: f.condition,
           description: f.description || "No description provided.", seller: me.name,
-          sellerBadge: me.id === "vendor" ? "Verified Vendor" : "Verified Student", rating: 5.0, image: IMAGES[f.category] });
+          sellerBadge: me.id === "vendor" ? "Verified Vendor" : "Verified Student", rating: 5.0, image: IMAGES[f.category] ?? "" });
       }}>
         <input required maxLength={80} value={f.title} onChange={set("title")} placeholder="Item title" className={inputCls} />
         <div className="grid grid-cols-2 gap-3">
