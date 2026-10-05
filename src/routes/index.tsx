@@ -21,7 +21,7 @@ export const Route = createFileRoute("/")({
   component: App,
 });
 
-const zar = (n: number) => `R ${n.toLocaleString("en-ZA", { minimumFractionDigits: 2 })}`;
+const zar = (n: number) => `R ${n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ")}`;
 type Tab = "market" | "board" | "profile";
 
 function App() {
