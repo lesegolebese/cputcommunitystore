@@ -52,7 +52,11 @@ export type Product = {
   category: string;
   condition: string;
   seller: string;
-  sellerBadge: "Verified Student" | "Verified Vendor";
+  sellerBadge: string;
+  sellerId?: string;
+  reviewCount?: number;
+  boosted?: boolean;
+  boostType?: string;
   rating: number;
   image: string;
   description: string;
@@ -195,6 +199,8 @@ export type Notice = {
   liked?: boolean;
   flagged?: boolean;
   flagReason?: string;
+  authorId?: string;
+  comments?: { id: string; author: string; body: string; time: string }[];
 };
 export const NOTICE_TYPES = [
   "Announcement",
@@ -276,3 +282,9 @@ export const NOTICES: Notice[] = [
     contact: "pieter@gmail.com",
   },
 ];
+
+/** The API stores seeded images as "asset:<category>"; uploaded photos are data: URLs. */
+export function resolveImage(image: string): string {
+  if (image.startsWith("asset:")) return IMAGES[image.slice(6)] ?? "";
+  return image;
+}

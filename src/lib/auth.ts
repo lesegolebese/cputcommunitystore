@@ -1,4 +1,11 @@
-const SECRET = process.env.JWT_SECRET || "demo-secret-key-change-in-production";
+function getSecret(): string {
+  const configured = process.env["JWT_SECRET"];
+  if (configured && configured.length >= 32) return configured;
+  if (process.env["NODE_ENV"] === "production") {
+    throw new Error("JWT_SECRET must be set (32+ characters) in production");
+  }
+  return configured || "dev-only-secret-do-not-use-in-production-0000";
+}
 
 export interface JWTPayload {
   userId: string;
@@ -31,18 +38,25 @@ async function hmacSha256(message: string, secret: string): Promise<string> {
   return base64UrlEncode(String.fromCharCode(...new Uint8Array(signature)));
 }
 
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 export async function signToken(payload: Omit<JWTPayload, "iat" | "exp">): Promise<string> {
   const header = { alg: "HS256", typ: "JWT" };
   const now = Math.floor(Date.now() / 1000);
   const tokenPayload = {
     ...payload,
     iat: now,
-    exp: now + 7 * 24 * 60 * 60, // 7 days
+    exp: now + 12 * 60 * 60, // 12 hours
   };
 
   const encodedHeader = base64UrlEncode(JSON.stringify(header));
   const encodedPayload = base64UrlEncode(JSON.stringify(tokenPayload));
-  const signature = await hmacSha256(`${encodedHeader}.${encodedPayload}`, SECRET);
+  const signature = await hmacSha256(`${encodedHeader}.${encodedPayload}`, getSecret());
 
   return `${encodedHeader}.${encodedPayload}.${signature}`;
 }
@@ -52,8 +66,8 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
     const [encodedHeader, encodedPayload, signature] = token.split(".");
     if (!encodedHeader || !encodedPayload || !signature) return null;
 
-    const expectedSignature = await hmacSha256(`${encodedHeader}.${encodedPayload}`, SECRET);
-    if (signature !== expectedSignature) return null;
+    const expectedSignature = await hmacSha256(`${encodedHeader}.${encodedPayload}`, getSecret());
+    if (!safeEqual(signature, expectedSignature)) return null;
 
     const payload: JWTPayload = JSON.parse(base64UrlDecode(encodedPayload));
 

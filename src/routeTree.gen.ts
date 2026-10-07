@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiSplatRouteImport } from './routes/api.$'
 import { Route as ApiLoginRouteImport } from './routes/api.login'
 import { Route as ApiLogoutRouteImport } from './routes/api.logout'
 import { Route as ApiVerifyRouteImport } from './routes/api.verify'
@@ -17,6 +18,11 @@ import { Route as ApiVerifyRouteImport } from './routes/api.verify'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSplatRoute = ApiSplatRouteImport.update({
+  id: '/api/$',
+  path: '/api/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiLoginRoute = ApiLoginRouteImport.update({
@@ -37,12 +43,14 @@ const ApiVerifyRoute = ApiVerifyRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/$': typeof ApiSplatRoute
   '/api/login': typeof ApiLoginRoute
   '/api/logout': typeof ApiLogoutRoute
   '/api/verify': typeof ApiVerifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/$': typeof ApiSplatRoute
   '/api/login': typeof ApiLoginRoute
   '/api/logout': typeof ApiLogoutRoute
   '/api/verify': typeof ApiVerifyRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/$': typeof ApiSplatRoute
   '/api/login': typeof ApiLoginRoute
   '/api/logout': typeof ApiLogoutRoute
   '/api/verify': typeof ApiVerifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/login' | '/api/logout' | '/api/verify'
+  fullPaths: '/' | '/api/$' | '/api/login' | '/api/logout' | '/api/verify'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/login' | '/api/logout' | '/api/verify'
-  id: '__root__' | '/' | '/api/login' | '/api/logout' | '/api/verify'
+  to: '/' | '/api/$' | '/api/login' | '/api/logout' | '/api/verify'
+  id: '__root__' | '/' | '/api/$' | '/api/login' | '/api/logout' | '/api/verify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiSplatRoute: typeof ApiSplatRoute
   ApiLoginRoute: typeof ApiLoginRoute
   ApiLogoutRoute: typeof ApiLogoutRoute
   ApiVerifyRoute: typeof ApiVerifyRoute
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/$': {
+      id: '/api/$'
+      path: '/api/$'
+      fullPath: '/api/$'
+      preLoaderRoute: typeof ApiSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/login': {
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiSplatRoute: ApiSplatRoute,
   ApiLoginRoute: ApiLoginRoute,
   ApiLogoutRoute: ApiLogoutRoute,
   ApiVerifyRoute: ApiVerifyRoute,
